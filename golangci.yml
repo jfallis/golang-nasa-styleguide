@@ -4,7 +4,6 @@ linters:
   enable:
     - contextcheck
     - cyclop
-    - depguard
     - dogsled
     - dupl
     - errcheck
@@ -47,6 +46,7 @@ linters:
   disable:
     - bidichk
     - bodyclose
+    - depguard
     - embeddedstructfieldcheck
     - iface
     - interfacebloat
@@ -72,6 +72,10 @@ linters:
     - wsl_v5
     - zerologlint
 linters-settings:
+  gochecknoglobals:
+    allow:
+      - ^err.*
+      - ^Err.*
   forbidigo:
     forbid:
       - pattern: ".*func.*\\(.*\\).*\\{.*\\1.*\\}"
@@ -86,13 +90,6 @@ linters-settings:
         message: "manual goroutine termination discouraged"
       - pattern: "unsafe."
         message: "unsafe is forbidden except in isolated reviewed packages (Contributing.md §3)"
-  depguard:
-    rules:
-      main:
-        files: ["$all"]
-        deny:
-          - pkg: ".*"
-            desc: "Imports must be grouped: stdlib, external, protobuf, side-effect (Contributing.md §11)"
   funlen:
     lines: 60
     statements: 40
@@ -116,7 +113,7 @@ linters-settings:
       - name: indent-error-flow
       - name: package-comments
       - name: package-name
-        arguments: [ "util", "helper" ]
+        arguments: [ "util", "helper", "common" ]
       - name: range-loop
       - name: receiver-naming
       - name: time-naming
@@ -131,13 +128,25 @@ linters-settings:
     simple: true
     range-loops: true
   varnamelen:
-    min-length: 2
-    max-length: 30
-    allow-short: true
+    min-name-length: 2
+    check-receiver: true
+    check-return: true
+    check-type-param: true
+    ignore-type-assert-ok: true
+    ignore-map-index-ok: true
+    ignore-chan-recv-ok: true
+    ignore-names:
+      - err
+    ignore-decls:
+      - c echo.Context
+      - t testing.T
+      - e error
+      - i int
+      - T any
+      - m map[string]int
   errorlint:
     errorf: true
     wrap: true
-
 exclusions:
   generated: strict
   warn-unused: true
@@ -160,9 +169,6 @@ exclusions:
       text: "weak cryptographic primitive"
       linters:
         - gosec
-    - linters:
-        - staticcheck
-      text: "SA9003:"
     - linters:
         - lll
       source: "^//go:generate "
